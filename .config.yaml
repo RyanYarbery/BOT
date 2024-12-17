@@ -1,0 +1,47 @@
+# config.yaml
+
+training:
+  learning_rate: 0.00003 #0.00003
+  num_epochs: 200
+  warmup: 6
+  patience: 31
+  batch_size: 10
+  num_workers: 5
+  effective_batch_size: 4300 #2800
+  lr_decay_method: 'step'  # Options: 'step', 'exponential', 'cosine'
+  lr_step_size: 15  # For StepLR
+  lr_gamma: 0.333333333  # For StepLR and ExponentialLR
+  resume_from_checkpoint: 'models/BEST_MODEL_53.48_GitHash_b0918c4.pth' #null #'models/LEVERAGE_RETURNS_20240815_163003.pth' # 'path/to/your/checkpoint.pth
+  accumulation_per_epoch: 250
+
+data:
+  filepath: 'data/sorted_data_1min3.parquet'
+  # val_split: 0.2 Not using this anymore
+  resample_timeframes: ['15min','30min','4h'] # Def wanna put a sort on this list to ensure proper order! Perhaps in Data class?
+  target_tf: '30min'
+  
+model:
+  dropout: 0.2
+  sequence_length: 2 # Days
+  ndims: 16 # where used?
+  dim_feedforward: 512
+  nhead: 16
+  preprocess_layers: [32,32]
+  process_layers: [128,128,128,128,128,128,128,128]  #[24,24,24,24,24,24,24,24,24,24,24,24] #[32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32]
+  num_outputs: 1
+  output:
+    predictions_csv: 'predictions.csv'
+    model_directory: "models/"
+  type:
+    percent_high:
+      filename: PERCENTHIGH_20240804_121523.pth #'PERCENTHIGH_20240801_033140.pth' #'model_high_20240708_030644.pth'
+      type: 0
+    percent_low:
+      filename: 'PERCENTLOW_20240801_032256.pth' #'percent_low_model_20240709_041142.pth'
+      type: 1
+    leverage_returns:
+      filename: 'BEST_MODEL_53.48_GitHash_b0918c4.pth'  #'ABSOLUTEHIGH_20240812_165452.pth'
+      type: 2
+    absolute_low:
+      filename:
+      type: 3
