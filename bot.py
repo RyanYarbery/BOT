@@ -87,8 +87,8 @@ class Portfolio:
         self.tsl_price = 0
         self.tsl_hit = 0
                     
-    def short(self, current_price, open_price=None):
-        new_position_value = self.leverage * dydx.fetch_equity()
+    async def short(self, current_price, open_price=None):
+        new_position_value = self.leverage * await dydx.fetch_equity()
         new_position_size = new_position_value / current_price
         side_input = 'sell'
         entry_price = dydx.calculate_new_price(current_price, operation='subtract', buffer_value=2)
@@ -99,7 +99,7 @@ class Portfolio:
             self.trade_balance += self.open_position_value / self.leverage - self.trade_balance
             
             # Current position size will be negative for short.
-            current_position_size = dydx.fetch_position_size()            
+            current_position_size = await dydx.fetch_position_size()            
             # if current position size abs is greater than new_position_size, buy since size is too big.
             if abs(current_position_size) > abs(new_position_size):
                 new_position_size = float(abs(current_position_size)) - float(abs(new_position_size))
@@ -118,8 +118,8 @@ class Portfolio:
         self.position = SHORT
         self.entry_price = current_price
 
-    def long(self, current_price, open_price=None):
-        new_position_value = self.leverage * dydx.fetch_equity()
+    async def long(self, current_price, open_price=None):
+        new_position_value = self.leverage * await dydx.fetch_equity()
         new_position_size = new_position_value / current_price
         side_input = 'buy'
         
@@ -130,7 +130,7 @@ class Portfolio:
         elif self.position == LONG:
             self.trade_balance += self.open_position_value / self.leverage - self.trade_balance
 
-            current_position_size = dydx.fetch_position_size()
+            current_position_size = await dydx.fetch_position_size()
             # if current position size abs is greater than new_position_size, sell since size is too big.
             if abs(current_position_size) > abs(new_position_size):
                 new_position_size = float(abs(current_position_size)) - float(abs(new_position_size))
@@ -141,7 +141,7 @@ class Portfolio:
                 new_position_size = float(abs(new_position_size)) - float(abs(current_position_size))
             logging.info(f'Long changing. Current size: {current_position_size}, Adding this size: {new_position_size} (additive sizes may be negative)')
         
-        response = dydx.place_limit_order(side_input=side_input, size=new_position_size, price=entry_price)
+        response = await dydx.place_limit_order(side_input=side_input, size=new_position_size, price=entry_price)
         
         logging.info(f'Short order placed. Response: {response}')
         
@@ -176,8 +176,8 @@ class Portfolio:
             return True
         return False
 
-    def close_position(self, exit_price):
-        open_positions = dydx.fetch_open_positions()
+    async def close_position(self, exit_price):
+        open_positions = await dydx.fetch_open_positions()
         for position in open_positions:
             if position['status'] == 'OPEN':
                 size = position['size']
@@ -185,13 +185,13 @@ class Portfolio:
         trade_size = self.trade_balance * self.leverage
         if self.position == SHORT:
             price = dydx.calculate_new_price(exit_price, operation='add', buffer_value=2)
-            order = dydx.place_limit_order('buy', size, price)
+            order = await dydx.place_limit_order('buy', size, price)
             logging.info(f"Closing order with order: {order}, size: {size}, price: {price}")
             
             self.trade_balance += (self.entry_price - exit_price) * trade_size / self.entry_price
         elif self.position == LONG:
             price = dydx.calculate_new_price(exit_price, operation='subtract', buffer_value=2)
-            order = dydx.place_limit_order('sell', size, price)
+            order = await dydx.place_limit_order('sell', size, price)
             logging.info(f"Closing order with order: {order}, size: {size}, price: {price}")
             
             self.trade_balance += (exit_price - self.entry_price) * trade_size / self.entry_price
@@ -397,8 +397,8 @@ def process_data(model, history_queue): # Should probably improve these fn names
     
 async def main():
     print("Is data retreival running first?")
-    dydx.clear_existing_orders_and_positions()
-    dydx_balance = dydx.fetch_equity()
+    await dydx.clear_existing_orders_and_positions()
+    dydx_balance = await dydx.fetch_equity()
     
     portfolio = Portfolio(dydx_balance, tsl_pct=0.01, withdrawal_pct=0.1, leverage=10) # withdrawal_pct not implemented yet.
     

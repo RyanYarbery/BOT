@@ -217,7 +217,7 @@ class DydxInterface:
         price = float(eth_data.get('indexPrice', 0))
         if price == 0:
             # print("Fetching ethereum price failed.")
-            logging.info("Fetching ethereum price failed or price was 0 which is maybe more strange")
+            logging.info("Fetching ethereum price failed or price was 0 which is more strange")
         return price
 
     def cancel_order(self, order_id):
