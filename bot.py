@@ -392,6 +392,7 @@ def process_data(model, history_queue): # Should probably improve these fn names
             hold_time = hold_time_tensor,
         )
         action = q_values.max(1)[1]
+        return action.item()
         
     
 async def main():
