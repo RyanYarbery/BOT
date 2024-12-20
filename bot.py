@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
-from DYDXInterface.dydx_interface import DydxInterface
+# from DYDXInterface.dydx_interface import DydxInterface
+from dydx_v4_interface import DydxInterface
 import os
 import torch
 import logging
