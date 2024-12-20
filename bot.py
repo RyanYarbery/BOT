@@ -11,7 +11,7 @@ import time
 from Model.model_data import Data, TimeSeriesDataset
 from sklearn.preprocessing import RobustScaler, MinMaxScaler, StandardScaler
 from config import load_config
-
+# Was using bot_env 3.10.14
 config = load_config('config.yaml')
 print("ALL THESE FRIGGEN' VALUES SHOULD BE AQUIRED FROM THE LOADED MODEL OBJECT SO WE DON'T HAVE TO UPDATE THIS ISH ALL THE TIME.")
 SEQUENCE_LENGTH = config['model']['sequence_length']
