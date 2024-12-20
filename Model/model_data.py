@@ -164,8 +164,8 @@ class TimeSeriesDataset(torch.utils.data.Dataset):
         # else:
         timedelta_high = ceil(pd.Timedelta(self.data.highest_timeframe) / pd.Timedelta(self.data.shortest_timeframe))
         
-        first_index = len(valid_indices) - (timedelta_high * self.sequence_length)
-        last_index = len(valid_indices)
+        first_index = valid_indices - (timedelta_high * self.sequence_length)
+        last_index = valid_indices
         
         return range(first_index, last_index)
 
