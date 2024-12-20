@@ -346,20 +346,20 @@ def merge_csv_files(filenames):
     return data
 
 def prepare_input(model_data, sequence_length, num_outputs):
-    xception has occurred: TypeError
-TimeSeriesDataset.__init__() missing 3 required positional arguments: 'epoch', 'valid_indices', and 'data_type'
-  File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 349, in prepare_input
-    return TimeSeriesDataset(model_data, sequence_length, num_outputs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 369, in process_data
-    prepped_model_data = prepare_input(model_data, SEQUENCE_LENGTH, NUM_OUTPUTS)
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 423, in main
-    predicted_target = process_data(model, history_queue)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 447, in <module>
-    asyncio.run(main())
-TypeError: TimeSeriesDataset.__init__() missing 3 required positional arguments: 'epoch', 'valid_indices', and 'data_type'
+#     xception has occurred: TypeError
+# TimeSeriesDataset.__init__() missing 3 required positional arguments: 'epoch', 'valid_indices', and 'data_type'
+#   File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 349, in prepare_input
+#     return TimeSeriesDataset(model_data, sequence_length, num_outputs)
+#            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 369, in process_data
+#     prepped_model_data = prepare_input(model_data, SEQUENCE_LENGTH, NUM_OUTPUTS)
+#                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 423, in main
+#     predicted_target = process_data(model, history_queue)
+#                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/andrew/Programming/BOT-main/BOT/bot.py", line 447, in <module>
+#     asyncio.run(main())
+# TypeError: TimeSeriesDataset.__init__() missing 3 required positional arguments: 'epoch', 'valid_indices', and 'data_type'
     return TimeSeriesDataset(model_data, sequence_length, num_outputs)
 
 def process_data(model, history_queue): # Should probably improve these fn names here:
