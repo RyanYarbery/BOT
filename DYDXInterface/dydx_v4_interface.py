@@ -50,7 +50,7 @@ class DydxInterface:
         
         if self.environment == 'main':
             self.dydx_address = os.getenv('dydx_address') # Potential for there to be a different address and mnemonic for main than test
-            self.dydx_mnemonic = os.getenv('dydx_mnemonic')
+            self.dydx_mnemonic = os.getenv('dydx_mnemonic') here
             self.dydx_subaccount = 0
             self.net_node = 'mainnet_node'
             self.rest_indexer="https://indexer.dydx.trade"
