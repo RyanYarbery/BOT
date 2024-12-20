@@ -62,8 +62,8 @@ class DydxInterface:
                 websocket_indexer=self.websocket_indexer
             )
         else:
-            self.dydx_address = os.getenv('dydx_address') here
-            self.dydx_mnemonic = os.getenv('dydx_mnemonic')
+            self.dydx_address = os.getenv('dydx_test_address') here
+            self.dydx_mnemonic = os.getenv('dydx_test_mnemonic')
             self.NETWORK = TESTNET
             self.dydx_subaccount = 0
         
