@@ -34,7 +34,7 @@ import pickle
 import matplotlib.pyplot as plt
 from collections import deque, namedtuple
 import copy
-from reward import * #simulate_environment_step_new, get_ideal_action #, Trade
+from Model.reward import * #simulate_environment_step_new, get_ideal_action #, Trade
 
 # Add the parent directory to sys.path#+
 from config import load_config
