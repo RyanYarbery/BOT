@@ -27,7 +27,7 @@ from config import load_config
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers= [
-                        logging.FileHandler('data/logs/model.log'),
+                        logging.FileHandler('model.log'),
                         logging.StreamHandler()
                     ])
 
