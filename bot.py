@@ -442,7 +442,7 @@ async def main():
         
         current_time = datetime.now()
         next_minute = current_time.replace(second=0, microsecond=0) + timedelta(minutes=1)
-        delta_time = (next_minute - current_time).total_seconds()        
+        delta_time = (next_minute - current_time).total_seconds()
         time.sleep(delta_time) #This should make sure we start at the top of the minute, every minute.
     
 
