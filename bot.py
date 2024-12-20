@@ -30,8 +30,14 @@ logging.basicConfig(level=logging.INFO,
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-asyncio.run(DydxInterface())
-dydx = DydxInterface() # Testnet
+# dydx = DydxInterface() # Testnet
+dydx = None
+
+async def initialize_dydx():
+    global dydx
+    dydx = await DydxInterface()
+
+asyncio.run(initialize_dydx())
 # dydx = DydxInterface(environment = 'main') # Mainnet
 
 
