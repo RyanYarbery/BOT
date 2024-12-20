@@ -61,7 +61,7 @@ def load_model():
     
     
     model_info = torch.load('Models/Model.pth')
-    model = model_info['network_class']() # Create instance of model class
+    # model = model_info['network_class']() # Create instance of model class
     model.load_state_dict(model_info['model_state_dict'])
     
     model.eval()
