@@ -1,0 +1,7 @@
+To install the client package from the git folder you need to 
+
+cd v4-clients/v4-client-py-v2
+
+Then
+
+python -m pip install .
