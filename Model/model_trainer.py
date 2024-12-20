@@ -44,7 +44,7 @@ config = load_config('config.yaml')
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers= [
-                        logging.FileHandler('data/logs/trainer.log'),
+                        logging.FileHandler('trainer.log'),
                         logging.StreamHandler()
                     ]) # For some reason, we ain't logging to trainer.log... it is going to model.log
 
