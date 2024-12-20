@@ -45,7 +45,7 @@ asyncio.run(initialize_dydx())
 
 def load_model():
     model = TradingModel(
-        num_types=13,
+        num_types=19,
         timeframes=6,
         num_heads=config['model']['nhead'],
         d_models_pre=config['model']['preprocess_layers'],
