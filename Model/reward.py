@@ -15,7 +15,7 @@ import torch
 import pickle
 import matplotlib.pyplot as plt
 
-from model_data import *
+from Model.model_data import *
 from reward import *
 from model import *
 from model_trainer import CumulativeReturnBatch, DataPrefetcher, Portfolio
