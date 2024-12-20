@@ -392,7 +392,7 @@ def process_data(model, history_queue): # Should probably improve these fn names
     actions_tensor = history_items[:, :, 2].long()         # Shape: [batch_size, max_size]
     hold_time_tensor = history_items[:, :, 3].float()      # Shape: [batch_size, max_size]
     
-    with torch.no_grad():        
+    with torch.no_grad():
         input_datums = last_item['input'].to(device)
         
         if input_datums.dim() == 3: # IS THIS STILL VALID? - 12/12/24
