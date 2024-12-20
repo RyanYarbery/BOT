@@ -394,7 +394,7 @@ def process_data(model, history_queue): # Should probably improve these fn names
         action = q_values.max(1)[1]
         
     
-def main():
+async def main():
     print("Is data retreival running first?")
     dydx.clear_existing_orders_and_positions()
     dydx_balance = dydx.fetch_equity()
@@ -411,8 +411,8 @@ def main():
     
     while True:
         current_time = datetime.now()
-        dydx_trading_price = dydx.fetch_eth_price()
-        open_position = dydx.fetch_open_positions()
+        dydx_trading_price = await dydx.fetch_eth_price()
+        open_position = await dydx.fetch_open_positions()
         if open_position:
             open_position = SHORT if open_position[0]['side'] == 'SHORT' else LONG if open_position[0]['side'] == 'LONG' else NONE
         else:
@@ -444,7 +444,7 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
     
     
 # Potential improvements, have reserve balance fluctuate depending on volitility.
