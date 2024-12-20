@@ -424,13 +424,13 @@ async def main():
             
             logging.info(f"Predicted target: {action}")
             
-            if action == 0:
+            if action == 0: # Long
                 portfolio.long(dydx_trading_price)
-            elif action == 1:
+            elif action == 1: # Short
                 portfolio.short(dydx_trading_price)
-            elif action == 2:
+            elif action == 2: # Hold
                 pass
-            elif action == 3:
+            elif action == 3: # Close
                 portfolio.close_position(dydx_trading_price)
         elif portfolio.position != NONE:
             # IMPLEMENT THIS: Ensure that the TSL price is calculated correctly.
