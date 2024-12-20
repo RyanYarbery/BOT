@@ -420,7 +420,7 @@ async def main():
         portfolio.position = open_position
         
         if (current_time.minute % 5 == 2): # 2 because of min delay in fetching data. and another min to ensure csv saved
-             predicted_target = process_data(model, history_queue)
+            predicted_target = process_data(model, history_queue)
             
             logging.info(f"Predicted target: {predicted_target}")
             
