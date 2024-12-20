@@ -26,7 +26,7 @@ from torch.cuda import Stream
 import torch.amp as amp
 from torch.nn import MSELoss
 # from grokfast_pytorch import GrokFastAdamW
-from model_data import *
+from Model.model_data import *
 # from model3 import *
 # from Backtest.tradetest import Portfolio, calculate_returns
 # import torch.nn.functional as F  # Import F for loss computation
