@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 
 from Model.model_data import *
 from Model.reward import *
-from model import *
-from model_trainer import CumulativeReturnBatch, DataPrefetcher, Portfolio
+from Model.model import *
+from Model.model_trainer import CumulativeReturnBatch, DataPrefetcher, Portfolio
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
