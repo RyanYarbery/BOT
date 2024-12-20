@@ -1,4 +1,5 @@
 # https://trade.stage.dydx.exchange/trade/ETH-USD
+import asyncio
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import pandas as pd
@@ -28,6 +29,8 @@ logging.basicConfig(level=logging.INFO,
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
+asyncio.run(DydxInterface())
 dydx = DydxInterface() # Testnet
 # dydx = DydxInterface(environment = 'main') # Mainnet
 
