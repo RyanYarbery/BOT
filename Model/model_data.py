@@ -46,12 +46,12 @@ logging.basicConfig(level=logging.INFO,
                     ])
 
 class TimeSeriesDataset(torch.utils.data.Dataset):
-    def __init__(self, data, sequence_length, num_outputs, epoch, valid_indices, data_type):       
+    def __init__(self, data, sequence_length, num_outputs):#, epoch, valid_indices, data_type):       
         # self.live_trading = live_trading
         self.data = data
         self.num_outputs = num_outputs
         self.sequence_length = sequence_length
-        self.type = data_type
+        # self.type = data_type
                 
         # self.target = data.df_dict[data.target_tf]['position_class'] Delete this line when proven working!
         
@@ -59,13 +59,13 @@ class TimeSeriesDataset(torch.utils.data.Dataset):
         self.indicator_cols = [col for col in data.df_dict[data.target_tf].columns if col not in ['volatility','leverage_target', 'position_class', 'open', 'high', 'low', 'close', 'volume', 'target_leverage', 'open_pct', 'high_pct', 'low_pct', 'close_pct', 'weights']]
         self.value_cols = ['open_pct', 'high_pct', 'low_pct', 'close_pct']
         print(f"Indicator columns: {self.indicator_cols}")
-        self.valid_indices = self.get_valid_indices(valid_indices)
+        self.valid_indices = self.get_valid_indices(len(data))
         
         # Suppose you have num_sequences sequences
         self.batch_size = config['training']['batch_size']
         self.reward_objects = [Reward_Simple() for _ in range(self.batch_size)]
         self.tf_overlap_price = [0 for _ in range(self.batch_size)]
-        self.epoch = epoch
+        # self.epoch = epoch
 
     def decode_time_cyclical(sine, cosine, max_value): #https://chatgpt.com/c/672f3420-9874-8006-9513-26f9cf65b0ff
         # Calculate the angle
