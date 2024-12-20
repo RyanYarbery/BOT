@@ -41,7 +41,7 @@ This way, you can ensure that your future data is scaled in the same way as your
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers= [
-                        logging.FileHandler('data/logs/model_data.log'),
+                        logging.FileHandler('model_data.log'),
                         logging.StreamHandler()
                     ])
 
