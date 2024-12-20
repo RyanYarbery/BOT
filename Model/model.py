@@ -27,7 +27,7 @@ from config import load_config
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers= [
-                        logging.FileHandler('log.log'),
+                        logging.FileHandler('data/logs/model.log'),
                         logging.StreamHandler()
                     ])
 
@@ -243,7 +243,7 @@ class TradingModel(nn.Module):
         self.state_embedding = nn.Embedding(3, embedding_dims) # 3 states: long, short, none
         # self.current_state = nn.Parameter(self.state_embedding(torch.tensor([2])), requires_grad=False)  # 2 represents 'none' state
         # self.current_effective_leverage = nn.Parameter(self.effective_leverage_projection(torch.tensor([0.0])), requires_grad=False)
-        
+        self.time_held_projection = nn.Linear(1, embedding_dims)
         self.time_projection = nn.Linear(8, embedding_dims) # 8 times, min, hour, day, month as both sin and cos.
         # self.current_action = nn.Parameter(self.action_embedding(torch.tensor([2])), requires_grad=False)  # 2 represents 'hold' action
         
@@ -267,11 +267,12 @@ class TradingModel(nn.Module):
         # Output layer to produce Q-values for each action
         self.output_layer = nn.Linear(d_models_joint[-1], self.num_actions)
     
-    def forward(self, tensors, positions=None, effective_leverages=None, actions=None): #removed action=None, # Tensors of shape torch.Size([3, *self.num_timeframes*, 1856, 11])
+    def forward(self, tensors, positions, effective_leverages, actions, hold_time): # Likely to be wrong: Tensors of shape torch.Size([3, *self.num_timeframes*, 1856, 11])
         # tensors shape: (batch_size, num_timeframes, num_values (open, high, rsi[5]"close", etc. (all permuatations of the data)), num_features)
         x_list = []  # Initialize an empty list to store end/resultant x values
         index_of_latest_action = 0
         
+        # This is to ensure that we get the correct timeframes projections. Probably a better way to do this.
         # base_tokens = tensors.shape[2]
         divisor = int(tensors.shape[2]/self.sequence_length)
         
@@ -279,8 +280,10 @@ class TradingModel(nn.Module):
             x = tensors[:, tf_idx, :, :]
             feature_value = x[:, :, 0].unsqueeze(-1) # adding unsqueeze # First column, value.
             feature_times = x[:, :, 1:9] # Second to fifth columns, time. (min_sin, cos, hr_sin, hr_cos, day_sin, day_cos, month_sin, month_cos)
-            timeframe_feature = x[:, :, -2].long() # Second to last column, convert to long for embedding
-            type_feature = x[:, :, -1].long() # Last column, convert to long for embedding (rsi, macd...)
+            # timeframe_feature = x[:, :, -2].long() # Second to last column, convert to long for embedding
+            timeframe_feature = x[:, :, 9].long() # Second to last column, convert to long for embedding
+            # type_feature = x[:, :, -1].long() # Last column, convert to long for embedding (rsi, macd...)
+            type_feature = x[:, :, 10].long() # Last column, convert to long for embedding (rsi, macd...)
             
             # Apply the appropriate linear layer to each type
             value_embedded = self.value_type_layers(feature_value)
@@ -309,12 +312,21 @@ class TradingModel(nn.Module):
                     effective_leverage_proj = self.effective_leverage_projection(leverage)
                 x_list.append(effective_leverage_proj+unique_tf_feature_embedding)
                 
+                if hold_time is not None:
+                    hold_time = hold_time.to(dtype=tensors.dtype)
+                    hold_time_projected = self.time_held_projection(hold_time.unsqueeze(-1))
+                else:
+                    print("BOBERT")
+                    exit()
+                x_list.append(hold_time_projected+unique_tf_feature_embedding)
+                
                 if actions is not None:
                     actions_embedded = self.action_embedding(actions)
                 else:
                     print("SHIT FUCK BREAK")
                     exit()
                 x_list.append(actions_embedded+unique_tf_feature_embedding)
+                    
                 
                 # last action is at the end of the list from the deque object passed to this fn. So we get the next action from the latest provided action token's index
                 index_of_latest_action = len(x_list)
