@@ -10,6 +10,7 @@ import os
 import torch
 import logging
 import time
+from Model.model import ModelType, TradingModel
 from Model.model_data import Data, TimeSeriesDataset
 from sklearn.preprocessing import RobustScaler, MinMaxScaler, StandardScaler
 from config import load_config
@@ -41,9 +42,27 @@ asyncio.run(initialize_dydx())
 # dydx = DydxInterface(environment = 'main') # Mainnet
 
 
+
 def load_model():
+    model = TradingModel(
+        num_types=13,
+        timeframes=6,
+        num_heads=config['model']['nhead'],
+        d_models_pre=config['model']['preprocess_layers'],
+        d_models_joint=config['model']['process_layers'],
+        model_type=ModelType(2),
+        dropout=config['model']['dropout'],
+        target_tf=config['data']['target_tf'],
+        pre_process=False,
+        max_seq_length=config['model']['sequence_length'],
+        action_sequence_length=config['model']['action_sequence_length'],
+        dim_feedforward=config['model']['dim_feedforward'],
+    )
+    
+    
     model_info = torch.load('Models/Model.pth')
-    model = model_info['model']
+    model = model_info['network_class']() # Create instance of model class
+    model.load_state_dict(model_info['model_state_dict'])
     
     model.eval()
     return model, model_info
