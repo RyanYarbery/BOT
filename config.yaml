@@ -1,0 +1,61 @@
+# config.yaml
+
+training:
+  hault_pct: 0.18
+  learning_rate: 0.0003 #0.00003
+  num_epochs: 1000
+  warmup: 6
+  lr_step_size: 4  # How many steps until lower learning rate ...For StepLR
+  patience: 9 # How many epochs to wait killing process.
+  batch_size: 16
+  train_val_split: 0.9 # Higher value means more data for training
+  num_workers: 1 #2
+  gamma: 0.895 #8 #0.02   # Gamma - 1 is higher future reward focused, 0 is immediate reward focussed Discount factor for future rewards
+  epsilon_start: 0.1 #.25 #.95 # Epsilon - 1 is higher exploration, 0 is no exploration  # Starting value of epsilon for the epsilon-greedy policy
+  epsilon_end: 0.001  # Minimum value of epsilon
+  epsilon_decay: 20  # Decay rate of epsilon - lower is faster decay
+  effective_batch_size: 4300 #2800 <- Am I still using this bullshit?
+  lr_decay_method: 'step'  # Options: 'step', 'exponential', 'cosine'
+  lr_gamma: 0.333333333  # For StepLR and ExponentialLR
+  resume_from_checkpoint: 'data/models/20241215_050853/epoch_14/model_return_-0.000000.pth' # 'data/models/20241215_050853/epoch_2/model_return_0.052036.pth'                    # null #'data/models/20241109_035636/epoch_3/model_return_-0.697492.pth' # null #'data/models/20241029_161037/epoch_0/model_return_-0.997995.pth' # null #'data/models/20241028_083312/epoch37/model_accuracy_180.125000.pth' #<- A 1100% profitability after 3.6 months! Continue with this one. Run was started on 10/28/24 for git history  #null #'models/BEST_MODEL_53.48_GitHash_b0918c4.pth'
+  accumulation_per_epoch: 100
+  model_update_freq: 2500 # How many iterations before updating the model
+
+data:
+  filepath: 'data/sorted_data_1min3.parquet'
+  # val_split: 0.2 Not using this anymore
+  resample_timeframes: ['5min','15min','30min','1h','2h','4h'] #['30min','4h'] # # Def wanna put a sort on this list to ensure proper order! Perhaps in Data class?
+  target_tf: '30min' #'5min'
+  lowest_tf: '5min'
+  future_sample_ticks: 6
+  volatility_window: 6
+  volatility_penalty: 0.90 # 0.9 near term focused, 0.99 future focused (basically gamma)
+  future_price_gamma: 0.85
+  
+model:
+  initial_capital: 1000
+  dropout: 0.2
+  sequence_length: 8 # Ticks
+  action_sequence_length: 6 # Show the model the last N actions, effective_leverages, and positions
+  ndims: 16 # where used?
+  dim_feedforward: 384 #512
+  nhead: 16
+  preprocess_layers: [32,32]
+  process_layers: [64,64,64,64,64,64,64,64] #[96,96,96,96,96,96,96,96]
+  num_outputs: 1
+  output:
+    predictions_csv: 'predictions.csv'
+    model_directory: "data/models/"
+  type:
+    percent_high:
+      filename: PERCENTHIGH_20240804_121523.pth #'PERCENTHIGH_20240801_033140.pth' #'model_high_20240708_030644.pth'
+      type: 0
+    percent_low:
+      filename: 'PERCENTLOW_20240801_032256.pth' #'percent_low_model_20240709_041142.pth'
+      type: 1
+    leverage_returns:
+      filename: 'BEST_MODEL_53.48_GitHash_b0918c4.pth'  #'ABSOLUTEHIGH_20240812_165452.pth'
+      type: 2
+    absolute_low:
+      filename:
+      type: 3
