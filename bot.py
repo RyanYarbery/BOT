@@ -88,29 +88,37 @@ class Portfolio:
         self.tsl_hit = 0
                     
     async def short(self, current_price, open_price=None):
-        new_position_value = self.leverage * await dydx.fetch_equity()
+
+        equity = await dydx.fetch_equity()
+        if not equity:
+            logging.info('Equity was nothing or Failed to fetch equity in short function!')
+
+        new_position_value = self.leverage * equity
         new_position_size = new_position_value / current_price
         side_input = 'sell'
-        entry_price = dydx.calculate_new_price(current_price, operation='subtract', buffer_value=2)
+        entry_price = dydx.calculate_new_price(current_price, operation='subtract', buffer_value=5) # Changed buffer from 2 to 5
         
         if self.position == LONG:
-            self.close_position(current_price)
+            await self.close_position(current_price)
         elif self.position == SHORT:
             self.trade_balance += self.open_position_value / self.leverage - self.trade_balance
             
             # Current position size will be negative for short.
-            current_position_size = await dydx.fetch_position_size()            
+            current_position_size = await dydx.fetch_position_size()
+            if not current_position_size:
+                logging.info("Current Position size was nothing or Couldn't pull current position size!")  
+
             # if current position size abs is greater than new_position_size, buy since size is too big.
             if abs(current_position_size) > abs(new_position_size):
                 new_position_size = float(abs(current_position_size)) - float(abs(new_position_size))
                 side_input = 'buy'
-                entry_price = dydx.calculate_new_price(current_price, operation='add', buffer_value=2)
+                entry_price = dydx.calculate_new_price(current_price, operation='add', buffer_value=5) # Changed buffer from 2 to 5
             else:
                 # Positive val (new_position_size) + negative curr size (current_position_size) = delta size needed to buy
                 new_position_size = float(abs(new_position_size)) - float(abs(current_position_size))
             logging.info(f'Short changing. Current size: {current_position_size}, Chanting to this size: {new_position_size} (additive sizes may be negative)')
         
-        response = dydx.place_limit_order(side_input=side_input, size=new_position_size, price=entry_price)
+        response = await dydx.place_limit_order(side_input=side_input, size=new_position_size, price=entry_price)
                 
         logging.info(f'Short order placed. Response: {response}')
         
@@ -119,18 +127,25 @@ class Portfolio:
         self.entry_price = current_price
 
     async def long(self, current_price, open_price=None):
-        new_position_value = self.leverage * await dydx.fetch_equity()
+        equity = await dydx.fetch_equity()
+        if not equity:
+            logging.info('Equity was nothing or Failed to fetch equity in long function!')
+
+        new_position_value = self.leverage * equity
         new_position_size = new_position_value / current_price
         side_input = 'buy'
         
-        entry_price = dydx.calculate_new_price(current_price, operation='add', buffer_value=2)
+        entry_price = dydx.calculate_new_price(current_price, operation='add', buffer_value=5) # Changed buffer from 2 to 5
         
         if self.position == SHORT:
-            self.close_position(current_price)
+            await self.close_position(current_price)
         elif self.position == LONG:
             self.trade_balance += self.open_position_value / self.leverage - self.trade_balance
 
             current_position_size = await dydx.fetch_position_size()
+            if not current_position_size:
+                logging.info("Current Position size was nothing or Couldn't pull current position size!")  
+
             # if current position size abs is greater than new_position_size, sell since size is too big.
             if abs(current_position_size) > abs(new_position_size):
                 new_position_size = float(abs(current_position_size)) - float(abs(new_position_size))
@@ -178,19 +193,22 @@ class Portfolio:
 
     async def close_position(self, exit_price):
         open_positions = await dydx.fetch_open_positions()
+        if not open_positions:
+            logging.info("No open positions or open positions failed to fetch!")
+
         for position in open_positions:
             if position['status'] == 'OPEN':
                 size = position['size']
                 break  # Exit the loop once the first open position is found
         trade_size = self.trade_balance * self.leverage
         if self.position == SHORT:
-            price = dydx.calculate_new_price(exit_price, operation='add', buffer_value=2)
+            price = dydx.calculate_new_price(exit_price, operation='add', buffer_value=5) # Changed buffer from 2 to 5
             order = await dydx.place_limit_order('buy', size, price)
             logging.info(f"Closing order with order: {order}, size: {size}, price: {price}")
             
             self.trade_balance += (self.entry_price - exit_price) * trade_size / self.entry_price
         elif self.position == LONG:
-            price = dydx.calculate_new_price(exit_price, operation='subtract', buffer_value=2)
+            price = dydx.calculate_new_price(exit_price, operation='subtract', buffer_value=2) # Changed buffer from 2 to 5
             order = await dydx.place_limit_order('sell', size, price)
             logging.info(f"Closing order with order: {order}, size: {size}, price: {price}")
             
@@ -399,6 +417,8 @@ async def main():
     print("Is data retreival running first?")
     await dydx.clear_existing_orders_and_positions()
     dydx_balance = await dydx.fetch_equity()
+    if not dydx_balance:
+        logging.info("Balance was 0 or failed to fetch!")
     
     portfolio = Portfolio(dydx_balance, tsl_pct=0.01, withdrawal_pct=0.1, leverage=10) # withdrawal_pct not implemented yet.
     
@@ -412,8 +432,15 @@ async def main():
     
     while True:
         current_time = datetime.now()
+
         dydx_trading_price = await dydx.fetch_eth_price()
+        if not dydx_trading_price:
+            logging.info("dydx_trading_price was either 0 or failed to fetch!")
+
         open_position = await dydx.fetch_open_positions()
+        if not open_position:
+            logging.info("No open positions or failed to fetch!")
+
         if open_position:
             open_position = SHORT if open_position[0]['side'] == 'SHORT' else LONG if open_position[0]['side'] == 'LONG' else NONE
         else:
@@ -426,13 +453,13 @@ async def main():
             logging.info(f"Predicted target: {action}")
             
             if action == 0: # Long
-                portfolio.long(dydx_trading_price)
+                await portfolio.long(dydx_trading_price)
             elif action == 1: # Short
-                portfolio.short(dydx_trading_price)
+                await portfolio.short(dydx_trading_price)
             elif action == 2: # Hold
                 pass
             elif action == 3: # Close
-                portfolio.close_position(dydx_trading_price)
+                await portfolio.close_position(dydx_trading_price)
         elif portfolio.position != NONE:
             # IMPLEMENT THIS: Ensure that the TSL price is calculated correctly.
             # portfolio.tsl_price = portfolio.calculate_tsl_price(dydx_trading_price)
