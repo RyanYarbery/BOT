@@ -13,7 +13,7 @@ import random
 from datetime import datetime, timedelta
 # from pympler import asizeof
 import torch.optim as optim
-from model import *
+from Model.model import *
 import torch
 import time
 import logging
