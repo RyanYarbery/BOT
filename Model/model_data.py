@@ -17,7 +17,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))#+
 sys.path.append(parent_dir)#+
 from config import load_config
 config = load_config('config.yaml')
-from reward import Reward_Simple
+from Model.reward import Reward_Simple
 # import warnings
 import copy
 
