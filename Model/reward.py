@@ -16,7 +16,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 from Model.model_data import *
-from reward import *
+from Model.reward import *
 from model import *
 from model_trainer import CumulativeReturnBatch, DataPrefetcher, Portfolio
 
