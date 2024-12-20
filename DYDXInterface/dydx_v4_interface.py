@@ -5,11 +5,9 @@
 import asyncio
 import random
 import os
-import time
 import logging
 from decimal import Decimal
 from decimal import ROUND_DOWN
-from functools import partial
 import datetime
 
 from v4_proto.dydxprotocol.clob.order_pb2 import Order, OrderId
@@ -17,13 +15,12 @@ from v4_proto.dydxprotocol.subaccounts.subaccount_pb2 import SubaccountId
 from v4_proto.dydxprotocol.clob.tx_pb2 import OrderBatch
 
 from dydx_v4_client import MAX_CLIENT_ID, OrderFlags
-from dydx_v4_client.indexer.rest.constants import OrderType, OrderExecution, OrderSide
+from dydx_v4_client.indexer.rest.constants import OrderType
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient
-from dydx_v4_client.network import make_mainnet, make_testnet, make_secure, make_insecure, mainnet_node, testnet_node
+from dydx_v4_client.network import make_mainnet
 from dydx_v4_client.network import TESTNET
 from dydx_v4_client.node.client import NodeClient
 from dydx_v4_client.node.market import Market, since_now
-from dydx_v4_client.node.message import cancel_order, batch_cancel
 from dydx_v4_client.wallet import Wallet
 
 logging.basicConfig(level=logging.INFO,
@@ -46,13 +43,9 @@ class DydxInterface:
         self.MARKET_ID = "ETH-USD"
         self.clobPairId = 1
 
-
-        
         if self.environment == 'main':
-            print("ADD THE MAINNET ADDRESS AND MNEMONIC")
-            exit()
-            # self.dydx_address = os.getenv('dydx_address') # Potential for there to be a different address and mnemonic for main than test
-            # self.dydx_mnemonic = os.getenv('dydx_mnemonic') here
+            self.dydx_address = os.getenv('dydx_address') # Potential for there to be a different address and mnemonic for main than test
+            self.dydx_mnemonic = os.getenv('dydx_mnemonic')
             self.dydx_subaccount = 0
             self.net_node = 'mainnet_node'
             self.rest_indexer="https://indexer.dydx.trade"
@@ -64,8 +57,8 @@ class DydxInterface:
                 websocket_indexer=self.websocket_indexer
             )
         else:
-            self.dydx_address = os.getenv('dydx_test_address')
-            self.dydx_mnemonic = os.getenv('dydx_test_mnemonic')
+            self.dydx_address = os.getenv('dydx_address')
+            self.dydx_mnemonic = os.getenv('dydx_mnemonic')
             self.NETWORK = TESTNET
             self.dydx_subaccount = 0
         
@@ -92,7 +85,6 @@ class DydxInterface:
             
             self.wallet = await Wallet.from_mnemonic(self.node, self.dydx_mnemonic, self.dydx_address)
 
-            
             # Get market info
             self.market = Market(
                 (await self.client.markets.get_perpetual_markets(self.MARKET_ID))["markets"][self.MARKET_ID]
@@ -198,12 +190,10 @@ class DydxInterface:
         if not account_info:
             logging.info("No account info to fetch.")
         subaccount = account_info.get('subaccount', {})
+        # print('Account info: ', subaccount)
         return {
             'equity': subaccount.get('equity'),
             'freeCollateral': subaccount.get('freeCollateral'),
-            'pendingDeposits': subaccount.get('pendingDeposits'),
-            'pendingWithdrawals': subaccount.get('pendingWithdrawals'),
-            'quoteBalance': subaccount.get('quoteBalance') # Doesn't exist
         }
     
     async def fetch_equity(self):
@@ -224,6 +214,25 @@ class DydxInterface:
             logging.info("No equity to fetch.")
         subaccount = equity.get('subaccount', {})
         return subaccount.get('equity')
+    
+    async def fetch_free_collateral(self):
+        """Fetch free collateral asynchronously."""
+        logging.info("Fetching free collateral")
+        if not self.client:
+            await self._client_task  # Ensure the client setup task completes
+
+        if not self.client:
+            logging.error("Client is not initialized. Cannot fetch free collateral.")
+            return []
+
+        free_collateral = await self.client.account.get_subaccount(
+            address=self.dydx_address,
+            subaccount_number=self.dydx_subaccount,
+        )
+        if not free_collateral:
+            logging.info("No free collateral to fetch.")
+        subaccount = free_collateral.get('subaccount', {})
+        return subaccount.get('freeCollateral')
 
     async def fetch_position_size(self):
         # Assuming that we are operating with one open position at all times
@@ -363,7 +372,6 @@ class DydxInterface:
         logging.info("Cancelling orders")
         print(f"short_term_cancels: {short_term_cancels}")
 
-
         response = await self.node.batch_cancel_orders(
             self.wallet,
             self.dydx_subaccount,
@@ -445,7 +453,6 @@ class DydxInterface:
                 self.wallet.sequence += 1
                 print('Wallet sequence post increment: ', self.wallet.sequence)
 
-
             except Exception as e:
                 if "account sequence mismatch" in str(e):
                     # Update wallet.sequence and retry
@@ -490,7 +497,6 @@ class DydxInterface:
             logging.error("Client is not initialized. Cannot fetch positions.")
             return []
         
-
         open_positions = await self.fetch_open_positions()
 
         for position in open_positions:
@@ -540,10 +546,6 @@ class DydxInterface:
 
         return None 
     
-
-
-
-
 # Usage Example
 async def main():
     dydx_interface = DydxInterface(environment='test')
@@ -554,7 +556,7 @@ async def main():
     # print("Position Size:", size)
     # price = await dydx_interface.fetch_eth_price()
     # print("ETH Price: ", price)
-    ## account_info = await dydx_interface.fetch_account()
+    # account_info = await dydx_interface.fetch_account()
     # print("Account Info: ", account_info)
     # price = await dydx_interface.fetch_eth_price()
     # price = (price + (price * 0.01))
@@ -568,25 +570,11 @@ async def main():
     # print('Market info: ', market_info)
     # response = await dydx_interface.cancel_all_orders()
     # print(f'Orders Cancelled = {response}')
-    response = await dydx_interface.clear_existing_orders_and_positions()
+    # response = await dydx_interface.clear_existing_orders_and_positions()
+    # free_collateral = await dydx_interface.fetch_free_collateral()
+    # print("Free collateral: ", free_collateral)
    
-
 if __name__ == "__main__":
     asyncio.run(main())
     
-# Place Limit Order
-# fetch_order_by_id
-# fetch_positions
-# fetch_open_positions
-# fetch_account_balance
-# fetch_equity
-# fetch_position_size
-# fetch_leverage
-# fetch_eth_market_data
-# fetch_eth_price
-# cancel_order
-# cancel_all_orders
-# place_trailing_stop_order
-# calculate_new_price
-# clear_existing_orders_and_positions
 
