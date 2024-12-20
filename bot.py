@@ -420,15 +420,17 @@ async def main():
         portfolio.position = open_position
         
         if (current_time.minute % 5 == 2): # 2 because of min delay in fetching data. and another min to ensure csv saved
-            predicted_target = process_data(model, history_queue)
+            action = process_data(model, history_queue)
             
-            logging.info(f"Predicted target: {predicted_target}")
+            logging.info(f"Predicted target: {action}")
             
-            if predicted_target == 0:
+            if action == 0:
                 portfolio.long(dydx_trading_price)
-            elif predicted_target == 1:
+            elif action == 1:
                 portfolio.short(dydx_trading_price)
-            else:
+            elif action == 2:
+                pass
+            elif action == 3:
                 portfolio.close_position(dydx_trading_price)
         elif portfolio.position != NONE:
             # IMPLEMENT THIS: Ensure that the TSL price is calculated correctly.
