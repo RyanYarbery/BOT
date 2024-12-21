@@ -213,7 +213,7 @@ class DydxInterface:
         if not equity:
             logging.info("No equity to fetch.")
         subaccount = equity.get('subaccount', {})
-        return subaccount.get('equity')
+        return float(subaccount.get('equity', '0'))
     
     async def fetch_free_collateral(self):
         """Fetch free collateral asynchronously."""
@@ -232,7 +232,7 @@ class DydxInterface:
         if not free_collateral:
             logging.info("No free collateral to fetch.")
         subaccount = free_collateral.get('subaccount', {})
-        return subaccount.get('freeCollateral')
+        return float(subaccount.get('freeCollateral'))
 
     async def fetch_position_size(self):
         # Assuming that we are operating with one open position at all times
@@ -243,7 +243,7 @@ class DydxInterface:
         if not size:
             # print("No open positions found to fetch size.")
             logging.info("No positions found to fetch size")
-        return size
+        return float(size)
     
     async def fetch_eth_price(self):
         # Fetches oracle price
