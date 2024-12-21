@@ -32,37 +32,39 @@ logging.basicConfig(level=logging.INFO,
 
 class DydxInterface:
 
-    def __init__(self, environment='test'):
-        """
-        Initializes the dYdX v4 client with the environment's API credentials.
-        
-        :param environment: Set to 'main' for mainnet, otherwise defaults to testnet.
-        """
-        self.environment = environment.lower()
-        self.client = None
-        self.MARKET_ID = "ETH-USD"
-        self.clobPairId = 1
+    @classmethod
+    async def create(cls, environment='test'):
+        """Factory method to create a DydxInterface instance asynchronously."""
+        instance = cls.__new__(cls)
+        instance.environment = environment.lower()
+        instance.client = None
+        instance.MARKET_ID = "ETH-USD"
+        instance.clobPairId = 1
 
-        if self.environment == 'main':
-            self.dydx_address = os.getenv('dydx_address') # Potential for there to be a different address and mnemonic for main than test
-            self.dydx_mnemonic = os.getenv('dydx_mnemonic')
-            self.dydx_subaccount = 0
-            self.net_node = 'mainnet_node'
-            self.rest_indexer="https://indexer.dydx.trade"
-            self.websocket_indexer="wss://indexer.dydx.trade/v4/ws"
-            self.node_url="dydx-grpc.publicnode.com"
-            self.NETWORK = make_mainnet(
-                node_url=self.node_url,  # No 'https://' prefix
-                rest_indexer=self.rest_indexer,
-                websocket_indexer=self.websocket_indexer
+        if instance.environment == 'main':
+            instance.dydx_address = os.getenv('dydx_address')
+            instance.dydx_mnemonic = os.getenv('dydx_mnemonic')
+            instance.dydx_subaccount = 0
+            instance.net_node = 'mainnet_node'
+            instance.rest_indexer="https://indexer.dydx.trade"
+            instance.websocket_indexer="wss://indexer.dydx.trade/v4/ws"
+            instance.node_url="dydx-grpc.publicnode.com"
+            instance.NETWORK = make_mainnet(
+                node_url=instance.node_url,
+                rest_indexer=instance.rest_indexer,
+                websocket_indexer=instance.websocket_indexer
             )
         else:
-            self.dydx_address = os.getenv('dydx_test_address')
-            self.dydx_mnemonic = os.getenv('dydx_test_mnemonic')
-            self.NETWORK = TESTNET
-            self.dydx_subaccount = 0
-        
-        self._client_task = asyncio.create_task(self._setup_client())
+            instance.dydx_address = os.getenv('dydx_test_address')
+            instance.dydx_mnemonic = os.getenv('dydx_test_mnemonic')
+            instance.NETWORK = TESTNET
+            instance.dydx_subaccount = 0
+
+        await instance._setup_client()
+        return instance
+
+    def __init__(self):
+        raise TypeError("DydxInterface must be created using create()")
         
     async def _setup_client(self):
         """Asynchronous internal client setup method."""
@@ -544,10 +546,9 @@ class DydxInterface:
 
         await self.close_positions()
 
-        return None 
-    
 # Usage Example
 async def main():
+    dydx_interface = await DydxInterface.create(environment='test')
     dydx_interface = DydxInterface(environment='test')
     await asyncio.sleep(1)  # Allow time for async setup
     # position = await dydx_interface.fetch_open_positions()
