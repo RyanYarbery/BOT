@@ -62,7 +62,7 @@ class DydxInterface:
             self.NETWORK = TESTNET
             self.dydx_subaccount = 0
         
-        self._client_task = asyncio.create_task(self._setup_client())
+        self._client_task = await self._setup_client() #asyncio.create_task(self._setup_client())
         
     async def _setup_client(self):
         """Asynchronous internal client setup method."""
