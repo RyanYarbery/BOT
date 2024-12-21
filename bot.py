@@ -36,7 +36,8 @@ dydx = None
 
 async def initialize_dydx():
     global dydx
-    dydx = DydxInterface()
+    # dydx = DydxInterface()
+    dydx = await DydxInterface.create(environment='test')
 
 asyncio.run(initialize_dydx())
 # dydx = DydxInterface(environment = 'main') # Mainnet
