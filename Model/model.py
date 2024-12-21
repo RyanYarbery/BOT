@@ -24,6 +24,8 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))#+
 sys.path.append(parent_dir)#+
 from config import load_config
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers= [
