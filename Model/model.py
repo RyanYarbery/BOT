@@ -144,7 +144,7 @@ class CustomTransformer(nn.Module):
         self.num_layers = len(d_models)
         self.is_preprocess = is_pre_process
         self.pos_encoder = nn.Parameter(
-            positional_encoding(input_ticks * num_types, d_models[0], device='cuda'), #d_models[0]
+            positional_encoding(input_ticks * num_types, d_models[0], device=device), #d_models[0]
             requires_grad=False
         )
         
