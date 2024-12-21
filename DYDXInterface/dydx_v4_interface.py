@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.INFO,
 
 class DydxInterface:
 
-    def __init__(self, environment='test'):
+    async def __init__(self, environment='test'):
         """
         Initializes the dYdX v4 client with the environment's API credentials.
         
