@@ -107,7 +107,7 @@ class Portfolio:
             # Current position size will be negative for short.
             current_position_size = await dydx.fetch_position_size()
             if not current_position_size:
-                logging.info("Current Position size was nothing or Couldn't pull current position size!")  
+                logging.info("Current Position size was nothing or Couldn't pull current position size!")
 
             # if current position size abs is greater than new_position_size, buy since size is too big.
             if abs(current_position_size) > abs(new_position_size):
