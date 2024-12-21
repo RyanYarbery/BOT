@@ -240,7 +240,7 @@ class DydxInterface:
         # Assuming that we are operating with one open position at all times
         open_positions = await self.fetch_open_positions()
         print('Open Positions: ', open_positions)
-        # RYAN LOOK HERE
+        # RYAN LOOK HERE, This changed, added the [0]
         size = open_positions[0]['size'] if open_positions else None
         size = abs(Decimal(size)) if size else Decimal('0')
         if not size:
