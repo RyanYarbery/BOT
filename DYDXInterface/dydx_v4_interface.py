@@ -240,8 +240,9 @@ class DydxInterface:
         # Assuming that we are operating with one open position at all times
         open_positions = await self.fetch_open_positions()
         print('Open Positions: ', open_positions)
-        size = open_positions['size'] if open_positions else None
-        size = abs(Decimal(size))
+        # RYAN LOOK HERE
+        size = open_positions[0]['size'] if open_positions else None
+        size = abs(Decimal(size)) if size else Decimal('0')
         if not size:
             # print("No open positions found to fetch size.")
             logging.info("No positions found to fetch size")
