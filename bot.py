@@ -199,7 +199,7 @@ class Portfolio:
 
         for position in open_positions:
             if position['status'] == 'OPEN':
-                size = position['size']
+                size = float(position['size'])
                 break  # Exit the loop once the first open position is found
         trade_size = self.trade_balance * self.leverage
         if self.position == SHORT:
