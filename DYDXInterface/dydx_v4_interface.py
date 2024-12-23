@@ -541,8 +541,8 @@ class DydxInterface:
 
     async def get_current_block(self):
         # Retry logic for `latest_block_height`
-        max_retries = 3
-        retry_delay = 1  # seconds
+        max_retries = 5
+        retry_delay = 10  # seconds
         current_block = None
 
         for attempt in range(max_retries):
