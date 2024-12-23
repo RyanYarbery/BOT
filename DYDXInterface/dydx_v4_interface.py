@@ -9,6 +9,7 @@ import logging
 from decimal import Decimal
 from decimal import ROUND_DOWN
 import datetime
+import grpc
 
 from v4_proto.dydxprotocol.clob.order_pb2 import Order, OrderId
 from v4_proto.dydxprotocol.subaccounts.subaccount_pb2 import SubaccountId
@@ -284,7 +285,25 @@ class DydxInterface:
         elif side_input.lower() == 'sell':
             side = Order.Side.SIDE_SELL
 
-        current_block = await self.node.latest_block_height()
+        # Retry logic for `latest_block_height`
+        max_retries = 3
+        retry_delay = 1  # seconds
+        current_block = None
+
+        for attempt in range(max_retries):
+            try:
+                current_block = await self.node.latest_block_height()
+                break  # Exit loop if successful
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.UNAVAILABLE:
+                    logging.warning(f"Attempt {attempt + 1}/{max_retries}: Unable to fetch latest block height. Retrying in {retry_delay} second(s)...")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logging.error(f"Failed to fetch latest block height due to unexpected error: {e}")
+                    raise  # Re-raise non-transient errors
+
+        if current_block is None:
+            raise RuntimeError("Failed to fetch latest block height after multiple retries.")
 
         new_order = self.market.order(
             order_id=order_id,
@@ -318,10 +337,25 @@ class DydxInterface:
             logging.error("Node client is not initialized. Cannot cancel order.")
             return []
         
-        current_block = await self.node.latest_block_height()
-        if not current_block:
-            logging.error("Could not get current block. Cannot cancel order.")
-            return[]
+        # Retry logic for `latest_block_height`
+        max_retries = 3
+        retry_delay = 1  # seconds
+        current_block = None
+
+        for attempt in range(max_retries):
+            try:
+                current_block = await self.node.latest_block_height()
+                break  # Exit loop if successful
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.UNAVAILABLE:
+                    logging.warning(f"Attempt {attempt + 1}/{max_retries}: Unable to fetch latest block height. Retrying in {retry_delay} second(s)...")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logging.error(f"Failed to fetch latest block height due to unexpected error: {e}")
+                    raise  # Re-raise non-transient errors
+
+        if current_block is None:
+            raise RuntimeError("Failed to fetch latest block height after multiple retries.")
         
         good_til_block = current_block + 60
 
@@ -365,10 +399,25 @@ class DydxInterface:
 
         short_term_cancels = OrderBatch(clob_pair_id=self.clobPairId, client_ids=client_ids)
 
-        current_block = await self.node.latest_block_height()
-        if not current_block:
-            logging.error("Could not get current block. Cannot cancel orders.")
-            return[]
+        # Retry logic for `latest_block_height`
+        max_retries = 3
+        retry_delay = 1  # seconds
+        current_block = None
+
+        for attempt in range(max_retries):
+            try:
+                current_block = await self.node.latest_block_height()
+                break  # Exit loop if successful
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.UNAVAILABLE:
+                    logging.warning(f"Attempt {attempt + 1}/{max_retries}: Unable to fetch latest block height. Retrying in {retry_delay} second(s)...")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logging.error(f"Failed to fetch latest block height due to unexpected error: {e}")
+                    raise  # Re-raise non-transient errors
+
+        if current_block is None:
+            raise RuntimeError("Failed to fetch latest block height after multiple retries.")
         
         good_til_block = current_block + 60
         
@@ -425,10 +474,25 @@ class DydxInterface:
             except Exception as e:
                 logging.error(f"Error processing order: {order}. Error: {e}")
 
-        current_block = await self.node.latest_block_height()
-        if not current_block:
-            logging.error("Could not get current block. Cannot cancel orders.")
-            return []
+        # Retry logic for `latest_block_height`
+        max_retries = 3
+        retry_delay = 1  # seconds
+        current_block = None
+
+        for attempt in range(max_retries):
+            try:
+                current_block = await self.node.latest_block_height()
+                break  # Exit loop if successful
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.UNAVAILABLE:
+                    logging.warning(f"Attempt {attempt + 1}/{max_retries}: Unable to fetch latest block height. Retrying in {retry_delay} second(s)...")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logging.error(f"Failed to fetch latest block height due to unexpected error: {e}")
+                    raise  # Re-raise non-transient errors
+
+        if current_block is None:
+            raise RuntimeError("Failed to fetch latest block height after multiple retries.")
 
         good_til_block = current_block + 60
 
