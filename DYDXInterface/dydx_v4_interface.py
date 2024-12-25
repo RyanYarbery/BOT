@@ -540,27 +540,37 @@ class DydxInterface:
         await self.close_positions()
 
     async def get_current_block(self):
-        # Retry logic for `latest_block_height`
+        """Fetch the current block with retries and exponential backoff."""
         max_retries = 5
-        retry_delay = 10  # seconds
+        initial_delay = 2  # Initial delay in seconds
         current_block = None
 
         for attempt in range(max_retries):
             try:
+                # Attempt to fetch the latest block height
                 current_block = await self.node.latest_block_height()
-                break  # Exit loop if successful
+                return current_block  # Exit loop if successful
             except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.UNAVAILABLE:
-                    logging.warning(f"Attempt {attempt + 1}/{max_retries}: Unable to fetch latest block height. Retrying in {retry_delay} second(s)...")
-                    await asyncio.sleep(retry_delay)
-                else:
-                    logging.error(f"Failed to fetch latest block height due to unexpected error: {e}")
-                    raise  # Re-raise non-transient errors
+                # Log the full error details for debugging
+                logging.warning(
+                    f"Attempt {attempt + 1}/{max_retries}: gRPC error occurred. "
+                    f"Details: {e.details()} | Code: {e.code()} | Metadata: {e.trailing_metadata()}"
+                )
 
-        if current_block is None:
-            raise RuntimeError("Failed to fetch latest block height after multiple retries.")
-        
-        return current_block
+                if e.code() in [grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.UNKNOWN]:
+                    # Transient errors: apply exponential backoff
+                    delay = initial_delay * (2 ** attempt)  # Exponential backoff
+                    delay = min(delay, 30)  # Cap the delay to 30 seconds
+                    logging.warning(f"Retrying in {delay} seconds...")
+                    await asyncio.sleep(delay)
+                else:
+                    # Non-transient errors: re-raise
+                    logging.error(f"Non-recoverable error: {e}")
+                    raise
+
+        # If all retries fail, raise an exception
+        raise RuntimeError("Failed to fetch the latest block height after multiple retries.")
+
 
 # Usage Example
 # async def main():
